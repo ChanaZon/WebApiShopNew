@@ -1,11 +1,13 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using DTO;
 using Entities.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Services;
-using AutoMapper;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace MyShop.Controllers
 {
@@ -13,28 +15,44 @@ namespace MyShop.Controllers
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        ICategoryService _categoryService;
-        IMapper _mapper;
-        private ILogger<CategoryController> _logger;
-        public CategoryController(ICategoryService categoryService, IMapper mapper, ILogger<CategoryController> logger)
+        private readonly ICategoryService _categoryService;
+        private readonly IMapper _mapper;
+        private readonly IMemoryCache _cache;
+        private const string CacheKey = "CategoryCache";
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(30);
+
+        public CategoryController(ICategoryService categoryService, IMapper mapper, IMemoryCache cache)
         {
             _mapper = mapper;
             _categoryService = categoryService;
-            _logger = logger;
+            _cache = cache;
         }
+
         //GET: api/<ProductController>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> Get()
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get()
         {
-            IEnumerable<Category> categories = await _categoryService.GetCategoriesAsync();
-            IEnumerable<CategoryDTO> categoryDTOs = _mapper.Map<IEnumerable<Category>,IEnumerable<CategoryDTO>>(categories);
-            if (categoryDTOs != null)
+            if (!_cache.TryGetValue(CacheKey, out IEnumerable<CategoryDTO> categoryDTOs))
             {
-                _logger.LogInformation("Category controller: get");
-                return Ok(categoryDTOs);
+                IEnumerable<Category> categories = await _categoryService.GetCategoriesAsync();
+                categoryDTOs = _mapper.Map<IEnumerable<Category>, IEnumerable<CategoryDTO>>(categories);
+
+                if (categoryDTOs != null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions
+                    {
+                        AbsoluteExpirationRelativeToNow = CacheDuration
+                    };
+
+                    _cache.Set(CacheKey, categoryDTOs, cacheEntryOptions);
+                }
+                else
+                {
+                    return BadRequest();
+                }
             }
-            _logger.LogError("Error: Category controller: get");
-            return BadRequest();
+
+            return Ok(categoryDTOs);
         }
     }
 }
