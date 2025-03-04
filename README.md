@@ -1,5 +1,9 @@
+# Web API Project
 
-You can explore our API using the provided Swagger documentation [here](<link-to-swagger>).
+Welcome to our Web API project built with .NET 8. This project adheres to REST architectural principles to ensure a scalable, maintainable, and efficient API.
+
+## API Documentation
+You can explore our API using the provided Swagger documentation (https://localhost:44398/Swagger/index.html).
 
 ## Project Structure
 
