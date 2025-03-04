@@ -20,7 +20,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             addCategory(category.categoryName,category.categoryId);
         });
     }
-    itemsCount.innerText = JSON.parse(localStorage.getItem(`${user.userId}_CartItems`)).length
+    const cartItems = localStorage.getItem(`${user.userId}_CartItems`)
+    if(cartItems)
+        itemsCount.innerText = JSON.parse(cartItems).length
+    else
+        itemsCount.innerText = '0'
 })
 const goToUserDetails = () => {
     window.location.href = ("UserDetails.html")

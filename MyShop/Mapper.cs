@@ -23,33 +23,13 @@ namespace MyShop
             CreateMap<OrderItemDTO, OrderItem>();
 
             CreateMap<OrderItem, OrderItemDTO>();
-            //CreateMap<OrderItemDTO, OrderItem>();
-
-
-
-
 
             CreateMap<Product, SingleProductDTO>();
             CreateMap<Product, ListProductDTO>().ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()));
 
-
             CreateMap<Category, CategoryDTO>();
         }
-        //CreateMap<Product, ProductDto>();
-        //    CreateMap<User, UserByIdDto>();
-        //    CreateMap<addUserDto, User>();
-        //    CreateMap<UserByIdDto, User>();
-        //    CreateMap<addUserDto, returnPostUserDto>();
-        //    CreateMap<User, returnLoginUserDto>();
-        //    CreateMap<Category, getCategoryDto>();
-        //    CreateMap<OrderItem, OrderItemDto>();
-        //    CreateMap<OrderItemDto, OrderItem>();
-
-        //    CreateMap<Order, OrderPostDto>();
-        //    CreateMap<OrderPostDto, Order>();
-
-        //    CreateMap<Order, returnOrderDto>();
-        //    CreateMap<OrderPostDto, returnOrderDto>();
+  
 
     }
 }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace TestProject
 {
-    public class DataBaseFixture
+    public class DataBaseFixture: IDisposable
     {
         public MyShopContext Context { get;private set; }
         public DataBaseFixture()
@@ -19,9 +19,9 @@ namespace TestProject
             .Build();
 
             var options = new DbContextOptionsBuilder<MyShopContext>()
-                .UseSqlServer("Server=DESKTOP-QKU0HL3;Database=ManageShop;Trusted_Connection=True;TrustServerCertificate=True")
+                .UseSqlServer("Server=srv2\\pupils;Database=Test214859456;Trusted_Connection=True;TrustServerCertificate=True")
                 .Options;
-            Context = new MyShopContext(options, configuration);
+            Context = new MyShopContext(options);
             Context.Database.EnsureCreated();
         }
 

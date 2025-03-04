@@ -1,4 +1,5 @@
 ﻿using Entities.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -12,31 +13,82 @@ using System.Threading.Tasks;
 namespace TestProject
 {
 
-    public class UserRepositoryIntegrationTest
+    public class UserRepositoryIntegrationTest : IClassFixture<DataBaseFixture>
     {
-        private readonly DataBaseFixture _DBFixture;
 
-        public UserRepositoryIntegrationTest()
+        private readonly IUserRepository _userRepository;
+        private readonly MyShopContext _context;
+
+        public UserRepositoryIntegrationTest(DataBaseFixture fixture)
         {
-            _DBFixture = new DataBaseFixture();
+            _context = fixture.Context;
+            _userRepository = new UserRepository(_context, NullLogger<UserRepository>.Instance);
         }
 
         [Fact]
-        public async Task CreateUser_Should_Add_User_To_Database()
+        public async Task AddUser_ValidUser_ShouldSaveToDatabase()
+        {
+            var user = new User { FirstName = "Chana", LastName = "Zon", UserName = "Chana@Zon", Password = "AAAaaa!!!234" };
+
+            var savedUser = await _userRepository.AddUserAsync(user);
+
+            Assert.NotNull(savedUser);
+            Assert.NotEqual(0, savedUser.UserId);
+            Assert.Equal("Chana@Zon", savedUser.UserName);
+        }
+
+
+        [Fact]
+        public async Task UpdateUser_NonExistingUser_ShouldNotThrowException()
+        {
+            var nonExistingUser = new User { FirstName = "Chana", LastName = "Zon", UserName = "Chana@Zon", Password = "AAAaaa!!!234" };
+
+            var result = await _userRepository.UpdateUserAsync(90099, nonExistingUser);
+            Assert.Null(result);
+        }
+
+
+        [Fact]
+        public async Task LoginUser_InvalidCredentials_ReturnNull()
+        {
+            var result = await _userRepository.Login("invalid@invalid", "WrongPass123");
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateUser_ValidUser_ShouldUpdateSuccessfully()
+        {
+            var user = new User { FirstName = "Chana", LastName = "Zon", UserName = "Chana@Zon", Password = "AAAaaa!!!234" };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var updatedUser = new User { FirstName = "Chana1", LastName = "Zon1", UserName = "Chana@Zon1", Password = "AAAaaa!!!2341" };
+
+            var result = await _userRepository.UpdateUserAsync(user.UserId, updatedUser);
+
+
+            Assert.NotNull(result);
+            Assert.Equal(updatedUser.FirstName, result.FirstName);
+            Assert.Equal(updatedUser.UserName, result.UserName);
+        }
+        [Fact]
+        public async Task UpdateUser_DuplicateUserName_ReturnsUserWithNullUserName()
         {
             // Arrange
-            var logger = NullLogger<UserRepository>.Instance;
+            var existingUser = new User { UserName = "duplicateuser@aaa", FirstName = "Existing", LastName = "User", Password = "Password123" };
+            await _context.Users.AddAsync(existingUser);
+            await _context.SaveChangesAsync();
 
-            var repository = new UserRepository(_DBFixture.Context,logger);
+            var duplicateUser = new User { UserName = "duplicateuser@aaa", FirstName = "Duplicate", LastName = "User", Password = "Password456" };
 
-            var user = new User { FirstName = "aa", LastName = "bb", UserName = "Chana@new", Password = "Rzfdsxf!@2" };
-            var DbUser = await repository.AddUserAsync(user);
+
+            // Act
+            var result = await _userRepository.UpdateUserAsync(2, duplicateUser);
 
             // Assert
-            Assert.NotNull(DbUser);
-            Assert.NotEqual(0, DbUser.UserId);
-            Assert.Equal("Chana@new", DbUser.UserName);
-           // _DBFixture.Dispose();
+            Assert.NotNull(result);
+            Assert.Null(result.UserName); 
         }
+
     }
 }

@@ -19,7 +19,6 @@ namespace Services
 
         public OrderService(IOrderRepository orderRepository, IProductRepository productRepository, ILogger<OrderService> logger)
 
-       // public OrderService(IOrderRepository orderRepository,IProductRepository productRepository)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;

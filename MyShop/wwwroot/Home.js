@@ -31,12 +31,13 @@ const createNewUser = async () => {
                 },
                 body: JSON.stringify(newUser)
             });
-            const responseData = await ResponsePut.json();
+            const responseData = await responsePost.json();
 
-            if (ResponsePost.ok) {
-                alert("Updated successfully");
-            } else {
-                if (ResponsePost.status === 409) {
+            if (responsePost.ok) {
+                alert(`user ${responseData.userId} created successfully` );
+            }
+            else {
+                if (responsePost.status === 409) {
                     alert("User name already exists");
                 }
                 if (responseData.errors) {
@@ -47,8 +48,8 @@ const createNewUser = async () => {
                 } else {
                     alert("One or more details is wrong");
                 }
-            }  }
-            }
+            }  
+            
         }
         catch (error) {
             console.error(error)

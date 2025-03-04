@@ -7,15 +7,13 @@ namespace Entities.Models;
 
 public partial class MyShopContext : DbContext
 {
-    public IConfiguration _configuration { get; }
     public MyShopContext()
     {
     }
 
-    public MyShopContext(DbContextOptions<MyShopContext> options, IConfiguration configuration)
+    public MyShopContext(DbContextOptions<MyShopContext> options)
         : base(options)
     {
-        _configuration = configuration;
 
     }
 
@@ -31,9 +29,9 @@ public partial class MyShopContext : DbContext
     public virtual DbSet<Rating> Ratings { get; set; }
 
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer(_configuration.GetSection("DBContext_Connection")["Home"]);
+        //=> optionsBuilder.UseSqlServer(_configuration.GetSection("DBContext_Connection")["School"]);
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
