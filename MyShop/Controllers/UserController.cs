@@ -6,8 +6,11 @@ using System.Diagnostics.Metrics;
 using AutoMapper;
 using DTO;
 using Microsoft.Identity.Client;
-
-
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace MyShop.Controllers
 {
@@ -28,28 +31,17 @@ namespace MyShop.Controllers
         }
         // GET: api/<UserController>
         [HttpGet]
+        [Authorize]
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
         }
-        // GET api/<UserController>/5
-        //[HttpGet("{id}")]
-        //public ActionResult<User> GetUserById(int id)
-        //{
-        //    User result = _userService.GetUserById(id);
-        //    if (result.UserId != null)
-        //    {
-        //        return Ok(_userService.GetUserById(id));
-        //    }
-        //    return BadRequest();
-        //}
 
         // POST api/<UserController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] FullUserDTO userToAdd)
         {
             User user = _mapper.Map<FullUserDTO, User>(userToAdd);
-            //int passwordScore = _userService.CheckPassword(user.Password);
             User newUser = await _userService.AddUser(user);
 
             if (newUser == null)
@@ -86,15 +78,48 @@ namespace MyShop.Controllers
             return result;
         }
 
-        // POST api/<UserController>
+        // POST api/<UserController>/Login
         [HttpPost]
         [Route("Login")]
+        [AllowAnonymous]
         public async Task<ActionResult<User>> Login([FromBody] LoginUserDTO loginUser )
         {
             User user = await _userService.Login(loginUser.Password,loginUser.UserName);
             ReturnUserDTO usersDTO = _mapper.Map<User, ReturnUserDTO>(user);
             if (usersDTO != null)
             {
+                // יצירת טוקן JWT
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+                    // ניתן להוסיף תביעות נוספות לפי הצורך
+                };
+
+                var key = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(HttpContext.RequestServices
+                        .GetRequiredService<IConfiguration>()["Jwt:Key"]));
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var token = new JwtSecurityToken(
+                    issuer: HttpContext.RequestServices
+                        .GetRequiredService<IConfiguration>()["Jwt:Issuer"],
+                    audience: null,
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddHours(1),
+                    signingCredentials: creds);
+
+                var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+                // שליחת הטוקן ב-cookie מאובטח
+                Response.Cookies.Append("access_token", tokenString, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // חובה בפרודקשן!
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+
                 _logger.LogInformation($"Login attemped with user {loginUser.UserName} and password {loginUser.Password}");
                 return Ok(usersDTO);
             }
@@ -104,6 +129,7 @@ namespace MyShop.Controllers
 
         // PUT api/<UserController>/5
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] FullUserDTO userToUpdate)
         {
             User u = _mapper.Map<FullUserDTO, User>(userToUpdate);
