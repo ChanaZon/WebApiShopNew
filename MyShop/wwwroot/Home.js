@@ -1,5 +1,4 @@
-﻿
-const meter = document.querySelector("#a")
+﻿const meter = document.querySelector("#a")
 const registerContainer = document.querySelector("#registerContainer");
 const loginContainer = document.querySelector("#loginContainer");
 let flag = false;
@@ -75,6 +74,10 @@ const login = async () => {
             },
             body: JSON.stringify(details)
         });
+        if (responsePost.status === 401) {
+            alert("Wrong authentication details");
+            return;
+        }
         const dataPost = await responsePost.json();
         if (dataPost.status == 400)
             alert("wrong details, please try again!")
@@ -84,7 +87,8 @@ const login = async () => {
         }
     }
     catch (error) {
-console.error(error)    }
+        console.error(error)
+    }
 }
 
 const getPassword = () => {

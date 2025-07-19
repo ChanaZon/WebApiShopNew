@@ -1,0 +1,11 @@
+services:
+  redis:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myshop-redis
+    ports:
+      - "6379:6379"
+    environment: 
+      REDIS_PASSWORD: MyRedisPassword123!
+    command: ["redis-server", "--requirepass", "MyRedisPassword123!"]

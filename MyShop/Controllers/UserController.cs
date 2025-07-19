@@ -39,6 +39,7 @@ namespace MyShop.Controllers
 
         // POST api/<UserController>
         [HttpPost]
+        [AllowAnonymous]
         public async Task<IActionResult> Post([FromBody] FullUserDTO userToAdd)
         {
             User user = _mapper.Map<FullUserDTO, User>(userToAdd);
@@ -111,6 +112,12 @@ namespace MyShop.Controllers
 
                 var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
+                // אם לא נוצר טוקן תקין, החזר 401
+                if (string.IsNullOrEmpty(tokenString))
+                {
+                    return Unauthorized();
+                }
+
                 // שליחת הטוקן ב-cookie מאובטח
                 Response.Cookies.Append("access_token", tokenString, new CookieOptions
                 {
@@ -124,7 +131,7 @@ namespace MyShop.Controllers
                 return Ok(usersDTO);
             }
             _logger.LogInformation($"Login failed with user {loginUser.UserName} and password {loginUser.Password}" );
-            return BadRequest();
+            return Unauthorized();
         }
 
         // PUT api/<UserController>/5

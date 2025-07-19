@@ -13,20 +13,17 @@ namespace MyShop.Controllers
     public class ProductController : ControllerBase
     {
         IProductService _productService;
-        IMapper _mapper;
         ILogger<ProductController> _logger;
         public ProductController(IProductService productService, IMapper mapper,ILogger<ProductController> logger)
         {
             _productService = productService;
-            _mapper=mapper;
             _logger = logger;
         }
         // GET: api/<ProductController>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ListProductDTO>>> Get([FromQuery] int? minPrice, [FromQuery] int? maxPrice, [FromQuery] int?[] categoryIds, [FromQuery] string? desc)
         {
-            IEnumerable<Product> products =await _productService.GetProductsAsync(minPrice, maxPrice, categoryIds, desc);
-            IEnumerable<ListProductDTO> productDTOs = _mapper.Map<IEnumerable<Product>, IEnumerable<ListProductDTO>>(products);
+            IEnumerable<ListProductDTO> productDTOs = await _productService.GetProductsAsync(minPrice, maxPrice, categoryIds, desc);
             if (productDTOs != null)
             {
                 _logger.LogInformation("Order controller:get");
