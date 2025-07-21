@@ -93,7 +93,7 @@ namespace MyShop.Controllers
                 var claims = new[]
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
-                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString())
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                     // ניתן להוסיף תביעות נוספות לפי הצורך
                 };
 

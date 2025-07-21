@@ -149,11 +149,14 @@ public partial class MyShopContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("LAST_NAME");
             entity.Property(e => e.Password)
-                .HasMaxLength(50)
+                .HasColumnType("nvarchar(max)")
                 .HasColumnName("PASSWORD");
             entity.Property(e => e.UserName)
                 .HasMaxLength(50)
                 .HasColumnName("USER_NAME");
+            entity.Property(e => e.Salt)
+                .HasMaxLength(8)
+                .HasColumnName("SALT");
         });
 
         OnModelCreatingPartial(modelBuilder);

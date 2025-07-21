@@ -36,10 +36,10 @@ namespace Repositories
             return user;
         }
 
-        public async  Task<User> Login(string Password,string UserName)
+        public async  Task<User> Login(string UserName)
         {
 
-            User user = await _context.Users.FirstOrDefaultAsync(u =>  u.UserName == UserName && u.Password == Password );
+            User user = await _context.Users.FirstOrDefaultAsync(u =>  u.UserName == UserName  );
            if(user == null) 
                 return null;
             return user;

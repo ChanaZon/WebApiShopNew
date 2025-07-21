@@ -98,6 +98,13 @@ builder.Host.UseNLog();
 
 // ================== Build App ==================
 var app = builder.Build();
+// ================== Configure App ==============
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Add("Content-Security-Policy",
+        "default-src 'self'; script-src 'self'; style-src 'self';");
+    await next();
+});
 
 // Middleware לשגיאות כלליות
 app.UseHandleErrorMiddleware();
